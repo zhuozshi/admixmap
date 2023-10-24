@@ -26,44 +26,50 @@ import re
 parser = argparse.ArgumentParser()
 parser.add_argument("-o", "--out",dest = "out")
 parser.add_argument("-t", "--trait",dest = "trait")
+parser.add_argument("-p", "--pheno",dest = "pheno",nargs='?', type=str, default="~/ukbb_project/phenotype-description.csv")
+parser.add_argument("-l", "--lanc",dest = "lanc",nargs='?', type=str, default="/u/project/sgss/UKBB/UKB-ADMIXED/01-dataset/out/rfmix-hm3-lanc")
+parser.add_argument("-c", "--cov",dest = "cov",nargs='?', type=str, default="/u/project/sgss/UKBB/PRS-RESEARCH/03-compile-pheno/out/")
+parser.add_argument("-n", "--nanc",dest = "nanc",nargs='?', type=int, default=2)
+
 
 args = parser.parse_args()
 out = args.out
-traitpos = int(args.trait)
+traitpos = int(args.trait) #traitpos here is the index of trait, not trait name
 
-if False:
-    lis = [11, 25, 26, 40]
-    traitpos = lis[traitpos-1]
-    
-if traitpos<=106:
-    traitdir = re.sub(r'\W+', '_',np.array(pd.read_csv("~/ukbb_project/phenotype-description.csv")["description"])[traitpos-1])
-else:
-    traitdir = np.array(pd.read_csv("~/ukbb_project/phenotype-description.csv")["id"])[traitpos-1]
-trait = np.array(pd.read_csv("~/ukbb_project/phenotype-description.csv")["id"])[traitpos-1]
 
-if traitpos<=106:
+#read phenotypes and get the trait name
+phenos = pd.read_csv(args.pheno)
+
+try:
+    temp = float(phenos["id"])
+    traitdir = re.sub(r'\W+', '_',np.array(phenos["description"])[traitpos-1])
+except:
+    traitdir = np.array(phenos["id"])[traitpos-1]
+trait = np.array(phenos["id"])[traitpos-1]
+
+
+if trait!=traitdir:
     print(f"Working on {traitpos}, {traitdir}_{trait}")
 else:
     print(f"Working on {traitpos}, {traitdir}")
 
 
-
+#iterate through 22 chromosomes
 dfs = []
 pos = []
-
 for i in range(1,23):
     
     print(f"Running chromosome {i}")
     
     #read lanc
-    path = f"/u/project/sgss/UKBB/UKB-ADMIXED/01-dataset/out/rfmix-hm3-lanc/chr{i}.msp.tsv"
+    path = f"{args.lanc}/chr{i}.msp.tsv"
     df_rfmix = pd.read_csv(path, sep="\t", skiprows=1)
     lanc0 = df_rfmix.loc[:, df_rfmix.columns.str.endswith(".0")].rename(columns=lambda x: x[:-2])
     lanc1 = df_rfmix.loc[:, df_rfmix.columns.str.endswith(".1")].rename(columns=lambda x: x[:-2])
     pos.append(list("chr"+df_rfmix["#chm"].astype(str)+":"+df_rfmix["spos"].astype(str)+"-"+df_rfmix["epos"].astype(str)))
     
     #read phenotypes and covariates
-    df_dir = "/u/project/sgss/UKBB/PRS-RESEARCH/03-compile-pheno/out/"
+    df_dir = args.cov
     df_pheno = pd.read_csv(join(df_dir,f"{trait}.tsv"), delim_whitespace=True, low_memory=False,)
     df_pheno.index = df_pheno.FID.astype(str) + "_" + df_pheno.IID.astype(str)
     df_pheno = df_pheno.drop(columns=["FID", "IID"])
@@ -111,7 +117,7 @@ for i in range(1,23):
     df_assoc = admix.assoc.marginal(
         geno=lanc,
         lanc=lanc,
-        n_anc=2,
+        n_anc=int(args.nanc),
         pheno=np.array(df_pheno).flatten(),
         cov=df_covar,
         method="ADM",
@@ -121,34 +127,29 @@ for i in range(1,23):
     dfs.append(df_assoc)
     
 
-    
+#compile segments and reindex
 df = pd.concat(dfs)
 poss = [item for row in pos for item in row]
 df["id"] = poss
 df = df.set_index("id")
 
+#figure drawing
 chrn = []
 for i in range(0,22):
     for j in range(dfs[i].shape[0]):
-        chrn.append(i+1)
-
-        
-        
+        chrn.append(i+1)   
 fig, ax = plt.subplots( figsize=(5, 3), dpi=150)
-#axes[0].scatter(np.arange(dset.n_snp), sim_beta[:, 0], s=2)
 
 admix.plot.manhattan(np.array(df.P), ax=ax, s=2,chrom=np.array(chrn),axh_y=-np.log10(5e-5))
 plt.tight_layout()
-if traitpos<=106:
+if trait!=traitdir:
     plt.title(f"Association of {traitdir}_{trait}")
 else:
     plt.title(f"Association of {traitdir}")
-plt.savefig(f"/u/home/z/zhuozshi/project-pasaniuc/ukbb_project/v2/out/{traitdir}/{traitdir}_assoc.png",bbox_inches='tight')
+plt.savefig(f"{out}/{traitdir}/{traitdir}_assoc.png",bbox_inches='tight')
 plt.close(fig)
     
-    
-
-
+#assoc saving
 compression_opts = dict(method='zip',
                         archive_name=f'{traitdir}.csv')  
 df.to_csv(f"{out}/{traitdir}/{traitdir}_assoc.zip", index=True, index_label='id',
@@ -156,45 +157,28 @@ df.to_csv(f"{out}/{traitdir}/{traitdir}_assoc.zip", index=True, index_label='id'
 
 
 
-SNPs = pd.DataFrame(columns=['Index_name', 'L1_BETA', 'L1_SE', 'N', 'P'])
 
-
-
-locations = [27*x for x in range(1037)]
-locations.append(df.shape[0]-1)
-
+#if nan found in P, skip QQ plot and histogram
 if np.isnan(np.array(df.sort_values(by=['P']).P)[0]) and np.isnan(np.array(df.sort_values(by=['P']).P)[-1]):
-    with open(f'/u/home/z/zhuozshi/project-pasaniuc/ukbb_project/v2/out/{traitdir}/{traitdir}_qqplot.txt', 'a') as the_file:
+    with open(f'{out}/{traitdir}/{traitdir}_qqplot.txt', 'a') as the_file:
         the_file.write('Wrong')
-    with open(f'/u/home/z/zhuozshi/project-pasaniuc/ukbb_project/v2/out/{traitdir}/{traitdir}_histo.txt', 'a') as the_file:
+    with open(f'{out}/{traitdir}/{traitdir}_histo.txt', 'a') as the_file:
         the_file.write('Wrong')
     print("Wrong")
-    
-
-
-    SNPs = pd.DataFrame(columns=['Index_name', 'L1_BETA', 'L1_SE', 'N', 'P'])
-
-
-
-    locations = [27*x for x in range(1037)]
-    locations.append(df.shape[0]-1)
-
-
 
 else:
-    for loc in locations:
-        SNPs.loc[len(SNPs.index)] = df.iloc[loc]
-
+    #plot qqplot
+    SNPs = df
     fig, ax = plt.subplots(figsize=(5, 5), dpi=150)
-    if traitpos<=106:
+    if trait!=traitdir:
         ret = qqplot(list(SNPs["P"]),ax=ax,title=F"Q-Q plot of {traitdir}_{trait}")
     else:
         ret = qqplot(list(SNPs["P"]),ax=ax,title=F"Q-Q plot of {traitdir}")
 
-    fig.savefig(f"/u/home/z/zhuozshi/project-pasaniuc/ukbb_project/v2/out/{traitdir}/{traitdir}_qqplot.png",bbox_inches='tight')
+    fig.savefig(f"{out}/{traitdir}/{traitdir}_qqplot.png",bbox_inches='tight')
 
-
-
+    
+    #plot histogram
     zscore = np.array(df["L1_BETA"])/np.array(df["L1_SE"])
 
     plt.figure(figsize=(15,10))
@@ -203,13 +187,14 @@ else:
     x=np.linspace(-4,4,10000)
     y=stats.norm.pdf(x, 0, 1)
     plt.plot(x,y,color="orange")
-    if traitpos<=106:
+    if trait!=traitdir:
         plt.title(f"Histogram of {traitdir}_{trait}")
     else:
         plt.title(f"Histogram of {traitdir}")
-    plt.savefig(f"/u/home/z/zhuozshi/project-pasaniuc/ukbb_project/v2/out/{traitdir}/{traitdir}_histo.png",bbox_inches='tight')
+    plt.savefig(f"{out}/{traitdir}/{traitdir}_histo.png",bbox_inches='tight')
 
-if traitpos<=106:
+#create a row for table
+if trait!=traitdir:
     temp = [f"{traitdir}_{trait}"]
 else:
     temp = [traitdir]
@@ -225,9 +210,10 @@ t2 = df.P[df.P<5e-4]
 
 temp.append(len(t2))
 
-np.save(f"/u/home/z/zhuozshi/project-pasaniuc/ukbb_project/v2/out/{traitdir}/{traitdir}",temp)
+np.save(f"{out}/{traitdir}/{traitdir}",temp)
 
 
+#TODO after running this script, compile all table rows into one
 
 
 
