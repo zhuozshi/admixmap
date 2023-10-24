@@ -41,7 +41,7 @@ traitpos = int(args.trait) #traitpos here is the index of trait, not trait name
 phenos = pd.read_csv(args.pheno)
 
 try:
-    temp = float(phenos["id"])
+    temp = float(phenos["id"][traitpos-1])
     traitdir = re.sub(r'\W+', '_',np.array(phenos["description"])[traitpos-1])
 except:
     traitdir = np.array(phenos["id"])[traitpos-1]
