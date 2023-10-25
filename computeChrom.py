@@ -107,7 +107,7 @@ for c in range(1,df_pheno.shape[1]):
 for d in todrop:
     df_pheno = df_pheno.drop([d],axis=1) 
 if len(todrop)>0:
-    logger.info("Found invalid covariates. Removed")
+    logger.info(f"Found invalid covariates {todrop}. Removed")
 
     
 #association
