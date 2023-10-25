@@ -1,3 +1,26 @@
+##########################################################################################
+### FileName: computeChrom.py
+### Author: Zhuozheng Shi
+### Date: 10/25/2023
+### Affiliation: UCLA Bogdan Lab
+### Description: Compute the admixture mapping using rfmix local ancestry segments.
+### Input: [-o, --out] output file name including path prefix, the output file will be a 
+###                    zip file containing the pd.DataFrame of result, which should have
+###                    the format "{path}/{prefix}_{chromosome_index(1-22)}"
+###        [-p, --pheno] input phenotype and covariates pd.DataFrame file path, the first  
+###                      column must named "id" in the format of "FID_IID", and the second
+###                      column must named "PHENO" containing all the phenotypes the rest
+###                      of column will be all the covariates
+###        [-r, --rfmix] input rfmix file ".msp.tsv" path.
+### Output: pd.DataFrame at name and path given as [-o, --out], "{out}_assoc.zip", 
+###         containning "L1_BETA", "L1_SE", "N", and "P" for local ancestry segments in 
+###         rfmix file, with "id" as index.
+##########################################################################################
+
+
+
+
+
 import matplotlib.pyplot as plt
 import admix
 import numpy as np
@@ -104,5 +127,5 @@ df_assoc = df_assoc.set_index("id")
 
 compression_opts = dict(method='zip',
                         archive_name=f'assoc.csv')  
-df_assoc.to_csv(f"{args.out}.zip", index=True, 
+df_assoc.to_csv(f"{args.out}_assoc.zip", index=True, 
           compression=compression_opts) 
