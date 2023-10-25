@@ -8,18 +8,14 @@
 ###                    zip file containing the pd.DataFrame of result, which should have
 ###                    the format "{path}/{prefix}_{chromosome_index(1-22)}"
 ###        [-p, --pheno] input phenotype and covariates pd.DataFrame file path, the first  
-###                      column must named "id" in the format of "FID_IID", and the second
-###                      column must named "PHENO" containing all the phenotypes the rest
-###                      of column will be all the covariates
+###                      column must be in the format of "FID_IID", and the second column
+###                      must contain all the phenotypes the rest of column will be all
+###                      the covariates
 ###        [-r, --rfmix] input rfmix file ".msp.tsv" path.
-### Output: pd.DataFrame at name and path given as [-o, --out], "{out}_assoc.zip", 
+### Output: pd.DataFrame at name and path given as [-o, --out], "{out}.csv.gz", 
 ###         containning "L1_BETA", "L1_SE", "N", and "P" for local ancestry segments in 
 ###         rfmix file, with "id" as index.
 ##########################################################################################
-
-
-
-
 
 import matplotlib.pyplot as plt
 import admix
@@ -43,19 +39,24 @@ from qtl.plot import qqplot
 import matplotlib.image as mpimg
 from scipy import stats 
 import re
+import structlog
 
+logger = structlog.get_logger()
 parser = argparse.ArgumentParser()
 parser.add_argument("-o", "--out",dest = "out")
 parser.add_argument("-p", "--pheno",dest = "pheno")
 parser.add_argument("-r", "--rfmix",dest = "rfmix")
-
-
-
 args = parser.parse_args()
+logger.info(
+        f"Currently computing chromosome {args.rfmix}"
+    )
 
 #read phenotypes and covariates
 df_pheno = pd.read_csv(args.pheno,index_col="id")
-
+logger.info(
+        f"Reading phenotypes and covariates in {args.pheno} with shape {df_pheno.shape}\n"
+        f"First 5 lines of data \n{df_pheno.iloc[:5]}"
+    )
 
 
 #read lanc
@@ -64,17 +65,17 @@ lanc0 = df_rfmix.loc[:, df_rfmix.columns.str.endswith(".0")].rename(columns=lamb
 lanc1 = df_rfmix.loc[:, df_rfmix.columns.str.endswith(".1")].rename(columns=lambda x: x[:-2])
 pos = list("chr"+df_rfmix["#chm"].astype(str)+":"+df_rfmix["spos"].astype(str)+"-"+df_rfmix["epos"].astype(str))
 
-
 #find common indiv
 notin = [x for x in list(lanc0.columns) if x not in df_pheno.index]
 lanc0 = lanc0.drop(notin,axis=1)
 lanc1 = lanc1.drop(notin,axis=1)
 df_pheno = df_pheno.reindex(list(lanc0.columns))
-
+if len(notin)>0:
+    logger.info("Found mismatched phenotype and lanc. Removed")
 
 #remove nan phenotypes
 notin = []
-phenos = np.array(df_pheno["PHENO"])
+phenos = np.array(df_pheno.iloc[:,0])
 namess = list(df_pheno.index)
 for i in range(len(phenos)):
     if np.isnan(phenos[i]):
@@ -82,6 +83,8 @@ for i in range(len(phenos)):
 lanc0 = lanc0.drop(notin,axis=1)
 lanc1 = lanc1.drop(notin,axis=1)
 df_pheno = df_pheno.reindex(list(lanc0.columns))
+if len(notin)>0:
+    logger.info("Found nan phenotypes. Removed")
 
 #compile lanc
 l1 = lanc0.to_numpy()
@@ -96,36 +99,33 @@ for i in range(n_snp):
         ins.append([l1[i,j],l2[i,j]])
     lanc.append(ins)
 
-    
-    
+#drop covariates if exclusive\
+todrop = []
+for c in range(1,df_pheno.shape[1]):
+    if len(set(df_pheno.iloc[:,c])) == 1:
+        todrop.append(df_pheno.columns[c])
+for d in todrop:
+    df_pheno = df_pheno.drop([d],axis=1) 
+if len(todrop)>0:
+    logger.info("Found invalid covariates. Removed")
 
-#drop sex if exclusive\
-try:
-    if sum(np.array(df_pheno["SEX"]))==0 or sum(np.array(df_pheno["SEX"]))==df_pheno.shape[0]:
-        df_pheno = df_pheno.drop(["SEX"],axis=1)
-except:
-    pass
-    
     
 #association
 df_assoc = admix.assoc.marginal(
     geno=lanc,
     lanc=lanc,
     n_anc=len(list(pd.read_csv(args.rfmix,nrows=0,sep="\t"))),
-    pheno=np.array(df_pheno["PHENO"]),
-    cov=df_pheno.drop(columns=["PHENO"]),
+    pheno=np.array(df_pheno.iloc[:,0]),
+    cov=df_pheno.iloc[:,1:],
     method="ADM",
     family="linear",
 )
 
-    
-
 #compile segments and reindex
 df_assoc["id"] = pos
 df_assoc = df_assoc.set_index("id")
+df_assoc.to_csv(f"{args.out}.csv.gz", index=True) 
 
-
-compression_opts = dict(method='zip',
-                        archive_name=f'assoc.csv')  
-df_assoc.to_csv(f"{args.out}_assoc.zip", index=True, 
-          compression=compression_opts) 
+logger.info(
+        f"Saving to {args.out}.csv.gz"
+    )
