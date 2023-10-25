@@ -3,34 +3,31 @@
 
 ## Examples on UKBB
 
-### Run all traits 
-Run 22 chromosomes for one trait and generate all the data at a time
-
-`python all_script_ukbb.py [-o outputDirectory] [-t traitIndex] [-p phenotypeFilePath] [-l lancFilePath] [-c covarianceFileDirectory] [-n numberOfAncestry]
-`
-
-After you finish all the trait, compile the summary table by
-
-`python tableCompile_ukbb.py [-o outputDirectory] [-n outputFileName] [-s areTableRowsSpreadInDirecotries] [-i inputDirectory] [-p phenotypeFilePath]
-`
-
-Traits to summary can be given by a list in tableCompile_ukbb.py
-
-### Run separately
 Run one chromosome for a specific trait by 
 
-`python computeChrom_ukbb.py [-o outputDirectory] [-t traitIndex] [-c chromosome] [-p phenotypeFilePath] [-l lancFilePath] [-v covarianceFileDirectory] [-n numberOfAncestry]
+`python computeChrom.py [-o output path] [-p phenotype and covariates file path] [-r rfmix file path] 
 `
+
+Please note that phenotype and covariance should be in the same -p file. [Make sure to see file header for details.](computeChrom.py)
+
+--------------------
 
 After finishing all chromosomes for one trait, compile by running
 
-`python compileResult_ukbb.py [-o outputDirectory] [-i inputDirectory] [-t traitIndex] [-p phenotypeFilePath]
+`python compileResult.py [-o output path] [-i input path] [-n name displayed in figure title] 
 `
+
+[Make sure to see file header for details.](compileResult.py)
+
+--------------------
 
 After you finish all the trait, compile the summary table by
 
-`python tableCompile_ukbb.py [-o outputDirectory] [-n outputFileName] [-s areTableRowsSpreadInDirecotries] [-i inputDirectory] [-p phenotypeFilePath]
+`python tableCompile.py [-o output path] [-i input path] [-n name of compressed csv table inside the zip file] 
 `
 
+[Make sure to see file header for details.](tableCompile.py)
 
+--------------------
 
+Check this [example for usage.](Example.ipynb)
