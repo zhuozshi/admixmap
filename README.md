@@ -8,7 +8,7 @@ Run one chromosome for a specific trait by
 `python computeChrom.py [-o output path] [-p phenotype and covariates file path] [-r rfmix file path] 
 `
 
-Please note that phenotype and covariance should be in the same -p file. See file header for details.
+Please note that phenotype and covariance should be in the same -p file. [See file header for details.](computeChrom.py)
 
 --------------------
 
