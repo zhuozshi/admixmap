@@ -49,7 +49,5 @@ Interpolate association result using template
 `python commonAssoc.py -a [assocFile] [template] [output] 
 `
 
---------------------
-
-Check this [example for usage.](commonAssoc.py)
+[Make sure to see file header for details.](commonAssoc.py)
 
