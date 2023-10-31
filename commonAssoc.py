@@ -9,7 +9,7 @@
 ###        [output] output file path for template
 ###        or
 ###        [assocFile] file path for single association file
-###        [tempalte] file path for template
+###        [template] file path for template
 ###        [output] output file path for interpolated association file
 ### Output: Template, which contains lanc ending locations in all association files
 ###         Interpolated association file using template
