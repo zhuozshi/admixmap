@@ -31,3 +31,25 @@ After you finish all the trait, compile the summary table by
 --------------------
 
 Check this [example for usage.](Example.ipynb)
+
+
+--------------------
+
+## Calculate Common Association
+
+First generate template with chromosome locations
+
+`python commonAssoc.py -t [assocFile 1] ... [assocFile n] [output] 
+`
+
+--------------------
+
+Interpolate association result using template
+
+`python commonAssoc.py -a [assocFile] [template] [output] 
+`
+
+--------------------
+
+Check this [example for usage.](commonAssoc.py)
+
