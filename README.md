@@ -35,7 +35,7 @@ Check this [example for usage.](Example.ipynb)
 
 --------------------
 
-## Calculate Common Association (Harmonizing)
+## Calculate Common Association -- Harmonizing
 
 First generate template with chromosome locations
 
