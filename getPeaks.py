@@ -1,30 +1,30 @@
-import matplotlib.pyplot as plt
-import admix
+##########################################################################################
+### FileName: getPeaks.py
+### Author: Zhuozheng Shi
+### Date: 11/15/2023
+### Affiliation: UCLA Bogdan Lab
+### Description: Generate table of peaks for association files, containing peak positions
+###              and peak bands under strict and loose p value thresholds.
+### Input: [assocFiles Directory] directory paths for all association files
+###        [bandsDict] dictionary file path for bands and peaks
+###        [strict p value threshold] strict p value threshold, e.g. 5e-5
+###        [loose p value threshold] loose p value threshold, e.g. 5e-4
+###        [output] output file path for peaks table
+### Output: table containing peak positions and peak bands under strict and loose p value 
+###         thresholds.
+##########################################################################################
+
 import numpy as np
-from admix.plot import compare_pval
-from os.path import join
 import pandas as pd
 import math
 import sys
 import argparse
 import openpyxl
 import os
-import statsmodels.api as sm
-import statsmodels.formula.api as smf
 import copy
-import statsmodels
 import time
-import dask.array as da
-import qtl
-from qtl.plot import qqplot
-import matplotlib.image as mpimg
-from scipy import stats 
 import re
-import scipy
 import structlog
-
-
-
 
 def getBand(chrom, pos, dic):    
     
@@ -51,7 +51,10 @@ dic = pd.read_csv(args[2])
 #ukbb = os.listdir("interpolation/ukbb_v3")
 ukbb = os.listdir(args[1])
 ukbb.sort()
-
+logger.info(
+        f"AssocFiles Directory {args[1]}, band dictionary {args[2]}"
+        f"with thresholds {threshold_strict} and {threshold_loose}"
+    )
 
 
 
@@ -112,4 +115,7 @@ for i in ukbb:
     #peakTable.loc[len(peakTable)] = [i[:-26],sss,spos,lll,lpos]
     
 peakTable = peakTable.set_index("trait")
+logger.info(
+        f"Table with {peakTable.shape[0]} traits saved to {args[5]}.csv.gz"
+    )
 peakTable.to_csv(f"{args[5]}.csv.gz",index=True)
