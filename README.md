@@ -44,10 +44,21 @@ First generate template with chromosome locations
 
 --------------------
 
-Interpolate association result using template
+ Interpolate association result using template
 
 `python commonAssoc.py -a [assocFile] [template] [output] 
 `
 
 [Make sure to see file header for details.](commonAssoc.py)
 
+
+--------------------
+
+## Get Peaks
+
+Get peaks from association files directory
+
+`python getPeaks.py [assocFiles Directory] [bandsDict] [strict p value threshold] [loose p value threshold] [output] 
+`
+
+[Make sure to see file header for details.](getPeaks.py)
