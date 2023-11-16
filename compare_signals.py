@@ -170,11 +170,12 @@ def main():
     ldpull.add_argument('-g','--genome_build',dest='genome_build',default='grch38_high_coverage')
     ldpull.add_argument('-t','--ldlink_token',dest='token')
     ldpull.add_argument('-anc','--ancestries',dest='ancs',default='EUR')
+    ldpull.add_argument('-vi','--reference_var_output',dest='ref_var_out',default='variants.txt')
     ldpull.add_argument('-lo','--ld_output',dest='ld_output_path')
 
     #parser.add_argument('-c','--compare',dest='compare')
     compare = subparsers.add_parser('compare')
-    compare.add_argument("-rv", "--reference_variants",dest='ref_assoc_variants',default='variants.txt')
+    compare.add_argument("-vi", "--reference_variants",dest='ref_assoc_variants',default='variants.txt')
     compare.add_argument('-a', '--association_file',dest='new_assoc_path')
     compare.add_argument('-as','--association_sep',dest='assoc_sep',default=',')
     compare.add_argument('-ac','--association_chrom',dest='assoc_chrom_colname',default='CHR')
@@ -190,7 +191,7 @@ def main():
     args = parser.parse_args()
     if args.command == 'pull_ld':
         print('Extracting LD information')
-        create_reference(ref_assoc_path=args.ref_assoc_path, sep=args.ref_sep, chrom_colname=args.ref_chrom_colname, pos_colname=args.ref_pos_colname, genome_build=args.genome_build, output_path=args.ld_output_path, ld_link_token=args.token,anc=args.ancs)
+        create_reference(var_file=args.ref_var_out, ref_assoc_path=args.ref_assoc_path, sep=args.ref_sep, chrom_colname=args.ref_chrom_colname, pos_colname=args.ref_pos_colname, genome_build=args.genome_build, output_path=args.ld_output_path, ld_link_token=args.token,anc=args.ancs)
         # Implement logic for the 'foo' command here
     elif args.command == 'compare':
         print('Comparing association results with LD reference')
