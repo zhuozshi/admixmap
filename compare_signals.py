@@ -3,7 +3,6 @@ import pandas as pd
 import numpy as np
 import argparse
 import sys
-#64cccebd0b9b
 
 def pull_variants_ld(variant_list: list,anc: str, ld_link_token: str, output_path: str, genome_build='grch38_high_coverage'):
     if output_path[-1]!='/':
