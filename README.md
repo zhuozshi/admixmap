@@ -74,23 +74,23 @@ This script compares hits from an analysis with published GWAS data. It has two 
 `python compare_signals.py pull_ld -r [reference variants] -rc [chr column in -r] -rp [pos column in -r] -rs [delimiter in -r] -g [genome build] -anc [ancestries] -t [LD link TOKEN] -lo [LD data output path]`
 
 * Defaults
- * `-rc`: CHR
- * `-rp`: POS
- * `-rs`: ,
- * `-g`: grch38_high_coverage
- * `-anc`: EUR
-  * `anc` can take any value within `EUR`, `AFR`, `AMR`, `SAS`, `EAS`, `ALL`, `EACH`. If `EACH` is specified, data from each of the other `anc` arguments will be pulled.
+    * `-rc`: CHR
+    * `-rp`: POS
+    * `-rs`: ,
+    * `-g`: grch38_high_coverage
+    * `-anc`: EUR
+        * `anc` can take any value within `EUR`, `AFR`, `AMR`, `SAS`, `EAS`, `ALL`, `EACH`. If `EACH` is specified, data from each of the other `anc` arguments will be pulled.
 
 2. Read in the generated results, and identify which of the generated results are in the "reference dataset" or are in LD with one of the LD Proxy outputs.
 
-`python compare_signals.py compare -a [association file] -ac [chr column in -a] -ai [SNP id column in -a] -ap [pos column in -a] -as [delimiter in -a] -ae [end pos column in -a] -li [LD data input path] -r2 [r2 cutoff] -anc [ancestries] -o [output]
+`python compare_signals.py compare -a [association file] -ac [chr column in -a] -ai [SNP id column in -a] -ap [pos column in -a] -as [delimiter in -a] -ae [end pos column in -a] -li [LD data input path] -r2 [r2 cutoff] -anc [ancestries] -o [output]`
 
 * Defaults
- * `-ac`: CHR
- * `-ap`: POS
- * `-as`: ,
- * `-anc`: EUR
- * `-r2`: 0.8
-  * `anc` can take any value within `EUR`, `AFR`, `AMR`, `SAS`, `EAS`, `ALL`, `EACH`. If `EACH` is specified, data from each of the other `anc` arguments will be pulled.
+    * `-ac`: CHR
+    * `-ap`: POS
+    * `-as`: ,
+    * `-anc`: EUR
+        * `anc` can take any value within `EUR`, `AFR`, `AMR`, `SAS`, `EAS`, `ALL`, `EACH`. If `EACH` is specified, data from each of the other `anc` arguments will be pulled.
+    * `-r2`: 0.8
 
 * This script can take in association files in two formats. The default is for variants from an association analyses, where the chromosome and position of the variant are required. The second is for regions from an association analyses, where both the chromosome, position, and end position (`-ae`) is required.
