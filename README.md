@@ -58,7 +58,7 @@ First generate template with chromosome locations
 
 Get peaks from association files directory
 
-`python getPeaks.py [assocFiles Directory] [bandsDict] [strict p value threshold] [loose p value threshold] [output] 
+`python getPeaks.py [assocFiles] [p value threshold] [output] 
 `
 
 [Make sure to see file header for details.](getPeaks.py)
